@@ -1,0 +1,5 @@
+{
+  "chain": "EVM",
+  "contract": "YOUR_CONTRACT_ADDRESS",
+  "rpcUrl": "YOUR_PUBLIC_RPC_URL"
+}
