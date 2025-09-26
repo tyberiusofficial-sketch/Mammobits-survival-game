@@ -31,7 +31,7 @@
   "abilities": {
     "stomp": {
       "radius": 140,
-      "damage": 20,
+      "damage": 40,
       "cooldownMs": 5000
     },
     "waterSpout": {
@@ -41,7 +41,7 @@
     },
     "charge": {
       "speedMultiplier": 1.5,
-      "durationMs": 10000,
+      "durationMs": 5000,
       "cooldownMs": 10000
     }
   },
@@ -100,8 +100,8 @@
         72
       ],
       "speed": 100,
-      "hp": 60,
-      "damage": 10,
+      "hp": 20,
+      "damage": 5,
       "ranged": {
         "enabled": true,
         "projectile": "spear.png",
@@ -119,7 +119,7 @@
         80
       ],
       "speed": 150,
-      "hp": 80,
+      "hp": 30,
       "damage": 12
     },
     "trex": {
@@ -128,7 +128,7 @@
         120
       ],
       "speed": 120,
-      "hp": 220,
+      "hp": 50,
       "damage": 20
     }
   },
