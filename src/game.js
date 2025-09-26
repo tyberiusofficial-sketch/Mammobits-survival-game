@@ -24,6 +24,7 @@ export class Game{
     this.ticker = new Ticker(60);
     this.enemies = [];
     this.projectiles = [];
+    this.items = []; // ⬅️ added: ground pickups
     this.score = 0;
     this.assets = {
       mammoth: img('./assets/mammoth.png'),
@@ -35,8 +36,12 @@ export class Game{
       background: img('./assets/maps/map.png'),
     };
     this.player = this.spawnPlayer();
+    this.player.buffs = []; // track all active buffs
     this.ui = null;
     this.cooldowns = { stomp:0, water:0, charge:0, attack:0 };
+
+    // ⬅️ added: buff spawn timer (ms)
+    this.nextBuffMs = cfg.pickups.buffs.startSec * 1000;
   }
   setUI(ui){ this.ui = ui; }
   spawnPlayer(){
@@ -52,10 +57,59 @@ export class Game{
   fireSpear(ex,ey,angle,speed,damage,maxRange){
     this.projectiles.push({ x:ex, y:ey, w:24, h:6, a:angle, spd:speed, dmg:damage, dist:0, max:maxRange });
   }
+
+  // ⬅️ added: spawn a pickup on the ground
+  spawnItem(type){
+    const x = Math.random() * (this.world.width  - 120) + 60;
+    const y = Math.random() * (this.world.height - 120) + 60;
+    this.items.push({ type, x, y, w:32, h:32 });
+  }
+
+  applyBuff(name){
+    const spec = cfg.pickups.buffs.effects[name];
+    if (!spec) return;
+
+    // add permanent buff (stackable)
+    this.player.buffs.push({ name, icon:`./assets/buff_${name}.png`, desc: spec.desc });
+
+    // apply stat mods (multiplicative stacking)
+    if (spec.dmgMult)   this.player.dmgMult   *= spec.dmgMult;
+    if (spec.spdMult)   this.player.spdMult   *= spec.spdMult;
+    if (spec.cdMult)    this.player.cdMult    *= spec.cdMult;
+    if (spec.dmgReduce) this.player.dmgReduce = 1 - (1 - (this.player.dmgReduce||0)) * (1 - spec.dmgReduce);
+  }
+
   update(dt){
     const P = this.player;
-    // run the spawner here (not in draw)
+
+    // ⬅️ added: BUFF SPAWN (despawn old, weighted pick, announce)
+    this.nextBuffMs -= dt;
+    if (this.nextBuffMs <= 0){
+      // despawn any old unpicked buff items
+      this.items = this.items.filter(it =>
+        it.type !== 'goldentusks' && it.type !== 'swifthoves' &&
+        it.type !== 'stonehide'   && it.type !== 'ancientfocus'
+      );
+
+      // weighted random pick from config
+      const weights = cfg.pickups.buffs.weights;
+      const keys = Object.keys(weights);
+      let r = Math.random(), acc = 0, pick = keys[0];
+      for (const k of keys){ acc += weights[k]; if (r <= acc){ pick = k; break; } }
+
+      this.spawnItem(pick);
+
+      // announce (expects /assets/announcement.mp3)
+      const desc = cfg.pickups.buffs.effects[pick].desc;
+      if (this.ui) this.ui.announce(`${pick} spawned! ${desc}`, 5000);
+      this.audio.playOnce('./assets/announcement.mp3', 1);
+
+      this.nextBuffMs += cfg.pickups.buffs.stepSec * 1000;
+    }
+
+    // run the enemy spawner
     this.spawner.update(dt, (type, x, y) => this.addEnemy(type, x, y));
+
     // movement
     let mvx=0,mvy=0;
     if(this.input.down('KeyW')||this.input.down('ArrowUp')) mvy-=1;
@@ -95,21 +149,23 @@ export class Game{
     for(const e of this.enemies){
       if(e.frozen){ e.freezeT-=dt; if(e.freezeT<=0) e.frozen=false; continue; }
       const ang = angleBetween(e.x,e.y,P.x,P.y); e.facing=ang;
-        const dx = P.x - e.x;
-        const dy = P.y - e.y;
-        const distToPlayer = Math.hypot(dx, dy);
-      
-        const approachRadius = 80; // how close they get before circling
-        if (distToPlayer > approachRadius) {
-          // move straight toward the player (normal behavior)
-          e.x += Math.cos(ang) * e.speed * dt / 1000;
-          e.y += Math.sin(ang) * e.speed * dt / 1000;
-        } else {
-          // orbit around the player instead of stacking
-          const tangent = ang + Math.PI / 2; // 90° offset
-          e.x += Math.cos(tangent) * e.speed * 0.6 * dt / 1000;
-          e.y += Math.sin(tangent) * e.speed * 0.6 * dt / 1000;
-        }
+
+      const dx = P.x - e.x;
+      const dy = P.y - e.y;
+      const distToPlayer = Math.hypot(dx, dy);
+
+      const approachRadius = 80; // how close they get before circling
+      if (distToPlayer > approachRadius) {
+        // move straight toward the player (normal behavior)
+        e.x += Math.cos(ang) * e.speed * dt / 1000;
+        e.y += Math.sin(ang) * e.speed * dt / 1000;
+      } else {
+        // orbit around the player instead of stacking
+        const tangent = ang + Math.PI / 2; // 90° offset
+        e.x += Math.cos(tangent) * e.speed * 0.6 * dt / 1000;
+        e.y += Math.sin(tangent) * e.speed * 0.6 * dt / 1000;
+      }
+
       if(e.type==='hunter'){
         e.rangedCd -= dt;
         if(e.rangedCd<=0){
@@ -119,6 +175,7 @@ export class Game{
         }
       }
     }
+
     // deaths
     this.enemies = this.enemies.filter(e=>{
       if(e.hp<=0){ this.effects.add(e.x,e.y,240,'impact'); this.score+=10; return false; }
