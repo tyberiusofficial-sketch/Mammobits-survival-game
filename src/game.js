@@ -93,8 +93,21 @@ export class Game{
     for(const e of this.enemies){
       if(e.frozen){ e.freezeT-=dt; if(e.freezeT<=0) e.frozen=false; continue; }
       const ang = angleBetween(e.x,e.y,P.x,P.y); e.facing=ang;
-      e.x += Math.cos(ang)*e.speed*dt/1000; e.y += Math.sin(ang)*e.speed*dt/1000;
-      e.y += Math.sin(e.bobT*2*Math.PI*bobHz)*bobAmp*dt/1000; e.bobT+=dt/1000;
+        const dx = P.x - e.x;
+        const dy = P.y - e.y;
+        const distToPlayer = Math.hypot(dx, dy);
+      
+        const approachRadius = 80; // how close they get before circling
+        if (distToPlayer > approachRadius) {
+          // move straight toward the player (normal behavior)
+          e.x += Math.cos(ang) * e.speed * dt / 1000;
+          e.y += Math.sin(ang) * e.speed * dt / 1000;
+        } else {
+          // orbit around the player instead of stacking
+          const tangent = ang + Math.PI / 2; // 90° offset
+          e.x += Math.cos(tangent) * e.speed * 0.6 * dt / 1000;
+          e.y += Math.sin(tangent) * e.speed * 0.6 * dt / 1000;
+        }
       if(e.type==='hunter'){
         e.rangedCd -= dt;
         if(e.rangedCd<=0){
