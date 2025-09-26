@@ -1,0 +1,20 @@
+{
+  "tiledversion": "1.10.2",
+  "layers": [
+    {
+      "name": "ground"
+    },
+    {
+      "name": "decor"
+    },
+    {
+      "name": "collision"
+    },
+    {
+      "name": "no_spawn"
+    },
+    {
+      "name": "zones"
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "world": {
+    "width": 2200,
+    "height": 1600,
+    "border": 40,
+    "camera": {
+      "w": 960,
+      "h": 540
+    }
+  },
+  "keybinds": {
+    "stomp": "Digit2",
+    "water": "Digit3",
+    "charge": "Digit4"
+  },
+  "player": {
+    "spriteSize": [
+      96,
+      96
+    ],
+    "moveSpeed": 260,
+    "baseHp": 100,
+    "autoAttack": true,
+    "attack": {
+      "damage": 10,
+      "cooldownMs": 500,
+      "range": 90,
+      "arcDeg": 45
+    }
+  },
+  "abilities": {
+    "stomp": {
+      "radius": 140,
+      "damage": 20,
+      "cooldownMs": 5000
+    },
+    "waterSpout": {
+      "arcDeg": 180,
+      "freezeMs": 5000,
+      "cooldownMs": 15000
+    },
+    "charge": {
+      "speedMultiplier": 1.5,
+      "durationMs": 10000,
+      "cooldownMs": 10000
+    }
+  },
+  "cooldownsUI": {
+    "showNumbers": true,
+    "radial": true,
+    "readyPulse": true
+  },
+  "vines": {
+    "spawnEverySec": 20,
+    "healPercentBaseHp": 25,
+    "glow": true,
+    "bounce": true
+  },
+  "items": {
+    "spawnFirstAtSec": 60,
+    "spawnEverySec": 60,
+    "lateGameSlowdown": {
+      "afterSec": 240,
+      "multiplierPerItem": 1.25
+    },
+    "despawnOnNextSpawn": true,
+    "rarityWeights": {
+      "goldentusks": 0.25,
+      "stonehide": 0.25,
+      "swifthooves": 0.25,
+      "ancientfocus": 0.25
+    },
+    "effects": {
+      "goldentusks": {
+        "type": "player.attack.damage.mult",
+        "value": 1.2
+      },
+      "stonehide": {
+        "type": "player.baseHp.mult",
+        "value": 1.25
+      },
+      "swifthooves": {
+        "type": "player.moveSpeed.mult",
+        "value": 1.2
+      },
+      "ancientfocus": {
+        "type": "abilities.cooldowns.mult",
+        "value": 0.8
+      }
+    }
+  },
+  "enemies": {
+    "bobbing": {
+      "amplitude": 4,
+      "frequencyHz": 2.0
+    },
+    "hunter": {
+      "spriteSize": [
+        72,
+        72
+      ],
+      "speed": 100,
+      "hp": 60,
+      "damage": 10,
+      "ranged": {
+        "enabled": true,
+        "projectile": "spear.png",
+        "speed": 520,
+        "damage": 10,
+        "cooldownMs": 1400,
+        "maxRange": 480,
+        "hitFx": "fx_impact",
+        "trailFx": "fx_spear_trail"
+      }
+    },
+    "sabre": {
+      "spriteSize": [
+        80,
+        80
+      ],
+      "speed": 150,
+      "hp": 80,
+      "damage": 12
+    },
+    "trex": {
+      "spriteSize": [
+        120,
+        120
+      ],
+      "speed": 120,
+      "hp": 220,
+      "damage": 20
+    }
+  },
+  "spawn": {
+    "startIntervalMs": 2000,
+    "minIntervalMs": 500,
+    "rampEverySec": 20,
+    "maxEnemies": 90,
+    "composition": {
+      "hunter": 0.4,
+      "sabre": 0.4,
+      "trex": 0.2
+    }
+  },
+  "buffs": [
+    {
+      "atSec": 60,
+      "global": {
+        "enemyHpMult": 1.25,
+        "enemyDmgMult": 1.2,
+        "enemySpeedMult": 1.05
+      }
+    },
+    {
+      "atSec": 120,
+      "global": {
+        "enemyHpMult": 1.5,
+        "enemyDmgMult": 1.4,
+        "enemySpeedMult": 1.1
+      }
+    }
+  ]
+}
