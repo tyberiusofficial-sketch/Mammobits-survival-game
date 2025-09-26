@@ -105,10 +105,10 @@
       "ranged": {
         "enabled": true,
         "projectile": "spear.png",
-        "speed": 520,
-        "damage": 10,
-        "cooldownMs": 1400,
-        "maxRange": 480,
+        "speed": 420,
+        "damage": 5,
+        "cooldownMs": 10000,
+        "maxRange": 380,
         "hitFx": "fx_impact",
         "trailFx": "fx_spear_trail"
       }
