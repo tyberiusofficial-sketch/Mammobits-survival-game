@@ -20,12 +20,21 @@ export class UI{
     this.banner.innerText = text; this.banner.style.display='block'; this.bannerTimer = ms;
   }
   setCooldown(name, ms){ this.cooldowns[name] = ms; }
-  setBuffs(buffIconUrls){
+
+  // UPDATED: accepts array of buff objects ({icon, desc, name}) or plain URLs (back-compat).
+  setBuffs(buffList){
     this.buffsEl.innerHTML = '';
-    buffIconUrls.forEach(url=>{
-      const img = document.createElement('img'); img.src = url; this.buffsEl.appendChild(img);
+    (buffList || []).forEach(b=>{
+      const src  = typeof b === 'string' ? b : b.icon;
+      const tip  = typeof b === 'string' ? '' : (b.desc || b.name || '');
+      if(!src) return;
+      const img = document.createElement('img');
+      img.src = src;
+      if (tip) img.title = tip;     // tooltip
+      this.buffsEl.appendChild(img);
     });
   }
+
   update(dt){
     Object.keys(this.cooldowns).forEach(k=> this.cooldowns[k] = Math.max(0, this.cooldowns[k]-dt));
     if(this.bannerTimer>0){ this.bannerTimer-=dt; if(this.bannerTimer<=0){ this.banner.style.display='none'; } }
