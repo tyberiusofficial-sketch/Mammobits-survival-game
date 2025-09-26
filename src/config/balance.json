@@ -56,38 +56,22 @@
     "glow": true,
     "bounce": true
   },
-  "items": {
-    "spawnFirstAtSec": 60,
-    "spawnEverySec": 60,
-    "lateGameSlowdown": {
-      "afterSec": 240,
-      "multiplierPerItem": 1.25
-    },
-    "despawnOnNextSpawn": true,
-    "rarityWeights": {
-      "goldentusks": 0.25,
-      "stonehide": 0.25,
-      "swifthooves": 0.25,
-      "ancientfocus": 0.25
-    },
-    "effects": {
-      "goldentusks": {
-        "type": "player.attack.damage.mult",
-        "value": 1.2
-      },
-      "stonehide": {
-        "type": "player.baseHp.mult",
-        "value": 1.25
-      },
-      "swifthooves": {
-        "type": "player.moveSpeed.mult",
-        "value": 1.2
-      },
-      "ancientfocus": {
-        "type": "abilities.cooldowns.mult",
-        "value": 0.8
-      }
-    }
+  "buffs": {
+  "startSec": 60,
+  "stepSec": 60,
+  "weights": {
+    "goldentusks": 0.25,
+    "swifthoves": 0.25,
+    "stonehide": 0.25,
+    "ancientfocus": 0.25
+  },
+  "effects": {
+    "goldentusks": { "dmgMult": 1.2, "desc": "+20% Attack Damage" },
+    "swifthoves":  { "spdMult": 1.2, "desc": "+20% Move Speed" },
+    "stonehide":   { "dmgReduce": 0.2, "desc": "-20% Damage Taken" },
+    "ancientfocus":{ "cdMult": 0.8, "desc": "-20% Ability Cooldown" }
+  }
+}
   },
   "enemies": {
     "bobbing": {
