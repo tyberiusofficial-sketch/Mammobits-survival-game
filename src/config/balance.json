@@ -56,22 +56,23 @@
     "glow": true,
     "bounce": true
   },
+  "pickups": {
   "buffs": {
-  "startSec": 60,
-  "stepSec": 60,
-  "weights": {
-    "goldentusks": 0.25,
-    "swifthoves": 0.25,
-    "stonehide": 0.25,
-    "ancientfocus": 0.25
-  },
-  "effects": {
-    "goldentusks": { "dmgMult": 1.2, "desc": "+20% Attack Damage" },
-    "swifthoves":  { "spdMult": 1.2, "desc": "+20% Move Speed" },
-    "stonehide":   { "dmgReduce": 0.2, "desc": "-20% Damage Taken" },
-    "ancientfocus":{ "cdMult": 0.8, "desc": "-20% Ability Cooldown" }
+    "startSec": 60,
+    "stepSec": 60,
+    "weights": {
+      "goldentusks": 0.25,
+      "swifthoves": 0.25,
+      "stonehide": 0.25,
+      "ancientfocus": 0.25
+    },
+    "effects": {
+      "goldentusks": { "dmgMult": 1.2, "desc": "+20% Attack Damage" },
+      "swifthoves":  { "spdMult": 1.2, "desc": "+20% Move Speed" },
+      "stonehide":   { "dmgReduce": 0.2, "desc": "-20% Damage Taken" },
+      "ancientfocus":{ "cdMult": 0.8, "desc": "-20% Ability Cooldown" }
+    }
   }
-}
   },
   "enemies": {
     "bobbing": {
