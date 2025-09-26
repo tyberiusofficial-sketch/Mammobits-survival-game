@@ -7,6 +7,7 @@ import { Effects } from './systems/Effects.js';
 import { collideWithWorld } from './systems/Physics.js';
 import { angleBetween, dist } from './utils/math.js';
 import cfg from './config/balance.json' with { type: 'json' };
+import { SpawnManager } from './systems/SpawnManager.js';
 
 function img(path){ const i=new Image(); i.src=path; return i; }
 
@@ -18,6 +19,7 @@ export class Game{
     this.renderer = new Renderer(canvas);
     this.effects = new Effects();
     this.world = { width: cfg.world.width, height: cfg.world.height, border: cfg.world.border };
+    this.spawner = new SpawnManager(cfg.spawn, this.world.width, this.world.height);
     this.camera = new Camera(cfg.world.camera.w, cfg.world.camera.h, this.world.width, this.world.height);
     this.ticker = new Ticker(60);
     this.enemies = [];
@@ -30,6 +32,7 @@ export class Game{
       trex:    img('./assets/trex.png'),
       spear:   img('./assets/spear.png'),
       icecube: img('./assets/icecube.png')
+      background: img('./assets/maps/map.png'),
     };
     this.player = this.spawnPlayer();
     this.ui = null;
@@ -51,6 +54,8 @@ export class Game{
   }
   update(dt){
     const P = this.player;
+    // run the spawner here (not in draw)
+    this.spawner.update(dt, (type, x, y) => this.addEnemy(type, x, y));
     // movement
     let mvx=0,mvy=0;
     if(this.input.down('KeyW')||this.input.down('ArrowUp')) mvy-=1;
@@ -155,11 +160,16 @@ export class Game{
     this.player.chargeT = cfg.abilities.charge.durationMs;
     this.cooldowns.charge = cfg.abilities.charge.cooldownMs;
   }
-  draw(){
-    const ctx = this.ctx, cam=this.camera;
-    // bg
-    ctx.fillStyle='#132031'; ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
-
+  // bg (map)
+  const imgBg = this.assets.background;
+  if (imgBg) {
+    // camera-aware draw; assumes map image size == world size
+    this.ctx.drawImage(imgBg, -this.camera.x, -this.camera.y);
+  } else {
+    // fallback solid color if not present
+    this.ctx.fillStyle = '#132031';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
     // enemies
     for(const e of this.enemies){
       const sx = Math.floor(e.x - cam.x), sy = Math.floor(e.y - cam.y);
