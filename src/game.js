@@ -83,6 +83,8 @@ export class Game{
       this.ui.setCooldown('water', this.cooldowns.water);
       this.ui.setCooldown('charge', this.cooldowns.charge);
       this.ui.setBuffs(P.buffs || []);
+      this.ui.update(dt);
+      this.ui.render(this.player);
     }
     if(this.input.down(cfg.keybinds.stomp) && this.cooldowns.stomp===0) this.stomp();
     if(this.input.down(cfg.keybinds.water) && this.cooldowns.water===0) this.water();
