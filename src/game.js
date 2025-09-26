@@ -31,7 +31,7 @@ export class Game{
       sabre:   img('./assets/sabre.png'),
       trex:    img('./assets/trex.png'),
       spear:   img('./assets/spear.png'),
-      icecube: img('./assets/icecube.png')
+      icecube: img('./assets/icecube.png'),
       background: img('./assets/maps/map.png'),
     };
     this.player = this.spawnPlayer();
