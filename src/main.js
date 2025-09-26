@@ -18,6 +18,9 @@ const btnCharge = document.getElementById('btn-charge');
 const engine = new Game(canvas, hudEl, bannerEl);
 const ui = new UI(hudEl, bannerEl, buffsEl);
 engine.setUI(ui);
+window.addEventListener('pointerdown', () => {
+  engine.audio.playBgm('./assets/backgroundmusic.mp3');
+}, { once:true });
 
 // Load FX frames (if present)
 const swipeFrames = await loadFrames('fx_swipe', 4); if(swipeFrames.length) engine.effects.setFrames('swipe', swipeFrames);
