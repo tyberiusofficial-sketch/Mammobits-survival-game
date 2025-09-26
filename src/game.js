@@ -160,16 +160,22 @@ export class Game{
     this.player.chargeT = cfg.abilities.charge.durationMs;
     this.cooldowns.charge = cfg.abilities.charge.cooldownMs;
   }
-  // bg (map)
-  const imgBg = this.assets.background;
-  if (imgBg) {
-    // camera-aware draw; assumes map image size == world size
-    this.ctx.drawImage(imgBg, -this.camera.x, -this.camera.y);
-  } else {
-    // fallback solid color if not present
-    this.ctx.fillStyle = '#132031';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-  }
+
+  // ===== draw() FIX START =====
+  draw(){
+    const ctx = this.ctx, cam = this.camera;
+
+    // bg (map)
+    const imgBg = this.assets.background;
+    if (imgBg) {
+      // camera-aware draw; assumes map image size == world size
+      this.ctx.drawImage(imgBg, -this.camera.x, -this.camera.y);
+    } else {
+      // fallback solid color if not present
+      this.ctx.fillStyle = '#132031';
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
     // enemies
     for(const e of this.enemies){
       const sx = Math.floor(e.x - cam.x), sy = Math.floor(e.y - cam.y);
@@ -206,4 +212,5 @@ export class Game{
     // effects last
     this.effects.draw(ctx, cam);
   }
+  // ===== draw() FIX END =====
 }
