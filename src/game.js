@@ -6,7 +6,7 @@ import { AudioSys } from './systems/Audio.js';
 import { Effects } from './systems/Effects.js';
 import { collideWithWorld } from './systems/Physics.js';
 import { angleBetween, dist } from './utils/math.js';
-import cfg from './config/balance.json' assert { type: 'json' };
+import cfg from './config/balance.json' with { type: 'json' };
 
 function img(path){ const i=new Image(); i.src=path; return i; }
 
