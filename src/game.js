@@ -42,6 +42,9 @@ export class Game{
 
     // ⬅️ added: buff spawn timer (ms)
     this.nextBuffMs = cfg.pickups.buffs.startSec * 1000;
+
+    // ⬅️ added: vine spawn timer
+    this.nextVineMs = (cfg.vines?.spawnEverySec || 0) * 1000;
   }
   setUI(ui){ this.ui = ui; }
   spawnPlayer(){
@@ -58,13 +61,14 @@ export class Game{
     this.projectiles.push({ x:ex, y:ey, w:24, h:6, a:angle, spd:speed, dmg:damage, dist:0, max:maxRange });
   }
 
-  // ⬅️ added: spawn a pickup on the ground
+  // replace spawnItem() in game.js
   spawnItem(type){
     const x = Math.random() * (this.world.width  - 120) + 60;
     const y = Math.random() * (this.world.height - 120) + 60;
+    const key = `buff_${type}`;
+    if (!this.assets[key]) this.assets[key] = img(`./assets/${key}.png`);
     this.items.push({ type, x, y, w:32, h:32 });
   }
-
   applyBuff(name){
     const spec = cfg.pickups.buffs.effects[name];
     if (!spec) return;
@@ -85,26 +89,33 @@ export class Game{
     // ⬅️ added: BUFF SPAWN (despawn old, weighted pick, announce)
     this.nextBuffMs -= dt;
     if (this.nextBuffMs <= 0){
-      // despawn any old unpicked buff items
       this.items = this.items.filter(it =>
         it.type !== 'goldentusks' && it.type !== 'swifthoves' &&
         it.type !== 'stonehide'   && it.type !== 'ancientfocus'
       );
-
-      // weighted random pick from config
       const weights = cfg.pickups.buffs.weights;
       const keys = Object.keys(weights);
       let r = Math.random(), acc = 0, pick = keys[0];
       for (const k of keys){ acc += weights[k]; if (r <= acc){ pick = k; break; } }
-
       this.spawnItem(pick);
-
-      // announce (expects /assets/announcement.mp3)
       const desc = cfg.pickups.buffs.effects[pick].desc;
       if (this.ui) this.ui.announce(`${pick} spawned! ${desc}`, 5000);
       this.audio.playOnce('./assets/announcement.mp3', 1);
-
       this.nextBuffMs += cfg.pickups.buffs.stepSec * 1000;
+    }
+
+    // ⬅️ added: VINE SPAWN
+    if (this.nextVineMs > 0){
+      this.nextVineMs -= dt;
+      if (this.nextVineMs <= 0){
+        this.items = this.items.filter(it => it.type !== 'vine');
+        this.items.push({ type:'vine',
+          x: Math.random()*(this.world.width-120)+60,
+          y: Math.random()*(this.world.height-120)+60,
+          w:36, h:36
+        });
+        this.nextVineMs += cfg.vines.spawnEverySec * 1000;
+      }
     }
 
     // run the enemy spawner
@@ -122,6 +133,23 @@ export class Game{
     P.vy = mvy/len * spd * dt/1000;
     P.x += P.vx; P.y += P.vy; if(mvx||mvy) P.facing = Math.atan2(P.vy,P.vx);
     collideWithWorld(P, {...this.world});
+
+    // ⬅️ added: ITEM PICKUPS
+    this.items = this.items.filter(it=>{
+      const hit = Math.abs(it.x - P.x) < (it.w+P.w)/2 && Math.abs(it.y - P.y) < (it.h+P.h)/2;
+      if (!hit) return true;
+      if (it.type === 'vine'){
+        const heal = P.maxHp * (cfg.vines.healPercentBaseHp/100);
+        P.hp = Math.min(P.maxHp, P.hp + heal);
+        this.effects.add(P.x, P.y, 250, 'impact');
+        this.audio.playOnce('./assets/vine_pickup.mp3', .9);
+      } else {
+        this.applyBuff(it.type);
+        this.effects.add(P.x, P.y, 250, 'impact');
+        this.audio.playOnce('./assets/buff_pickup.mp3', .9);
+      }
+      return false;
+    });
 
     // auto attack
     this.cooldowns.attack = Math.max(0,this.cooldowns.attack-dt);
@@ -156,12 +184,10 @@ export class Game{
 
       const approachRadius = 80; // how close they get before circling
       if (distToPlayer > approachRadius) {
-        // move straight toward the player (normal behavior)
         e.x += Math.cos(ang) * e.speed * dt / 1000;
         e.y += Math.sin(ang) * e.speed * dt / 1000;
       } else {
-        // orbit around the player instead of stacking
-        const tangent = ang + Math.PI / 2; // 90° offset
+        const tangent = ang + Math.PI / 2;
         e.x += Math.cos(tangent) * e.speed * 0.6 * dt / 1000;
         e.y += Math.sin(tangent) * e.speed * 0.6 * dt / 1000;
       }
@@ -186,11 +212,9 @@ export class Game{
     for(const pr of this.projectiles){
       const vx = Math.cos(pr.a)*pr.spd*dt/1000, vy=Math.sin(pr.a)*pr.spd*dt/1000;
       pr.x += vx; pr.y += vy; pr.dist += Math.hypot(vx,vy);
-      // collide with player
       if(pr.x < P.x+P.w/2 && pr.x+pr.w > P.x-P.w/2 && pr.y < P.y+P.h/2 && pr.y+pr.h > P.y-P.h/2){
         P.hp -= pr.dmg; this.effects.add(P.x,P.y,180,'impact'); pr.dist = pr.max+1;
       }
-      // bounds
       if(pr.x<0||pr.y<0||pr.x>this.world.width||pr.y>this.world.height){ pr.dist = pr.max+1; }
     }
     this.projectiles = this.projectiles.filter(pr=> pr.dist <= pr.max);
@@ -240,12 +264,26 @@ export class Game{
     // bg (map)
     const imgBg = this.assets.background;
     if (imgBg) {
-      // camera-aware draw; assumes map image size == world size
       this.ctx.drawImage(imgBg, -this.camera.x, -this.camera.y);
     } else {
-      // fallback solid color if not present
       this.ctx.fillStyle = '#132031';
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    // ⬅️ added: draw items
+    for(const it of this.items){
+      const sx = Math.floor(it.x - cam.x), sy = Math.floor(it.y - cam.y);
+      const key = `buff_${it.type}`;
+      const icon = this.assets[key];
+      if (icon) {
+        ctx.drawImage(icon, sx - it.w/2, sy - it.h/2, it.w, it.h);
+      } else if (it.type === 'vine') {
+        ctx.fillStyle = '#3ad17a';
+        ctx.beginPath(); ctx.arc(sx, sy, it.w/2, 0, Math.PI*2); ctx.fill();
+      } else {
+        ctx.fillStyle = '#ffd24d';
+        ctx.fillRect(sx - it.w/2, sy - it.h/2, it.w, it.h);
+      }
     }
 
     // enemies
